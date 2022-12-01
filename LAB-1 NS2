@@ -48,3 +48,6 @@ drop++;
 END{
 print "Number of packets dropped=" drop
 }
+
+
+awk -f 1.tcl out.tr
