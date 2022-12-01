@@ -1,0 +1,230 @@
+Awk script for performance comparison:
+BEGIN{
+drop=0;
+sum=0;
+}
+{
+if($1 == "d")
+{
+drop++;
+}
+sum+=$2
+}
+END{
+print "Avg. packet travel time=" sum/NR
+print "Number of packets dropped=" drop
+}
+
+Bus topology
+
+Tcl code:
+set ns [new Simulator]
+set ta [open lab3.tr w]
+$ns trace-all $ta
+set nf [open lab3.nam w]
+$ns namtrace-all $nf
+$ns color 1 Blue
+$ns color 2 Red
+proc finish {} {
+global ns nf ta
+$ns flush-trace
+#Close the NAM trace file
+close $ta
+close $nf
+#Execute NAM on the trace file
+exec nam lab3.nam &
+exit 0
+}
+
+#create six nodes
+set n0 [$ns node]
+set n1 [$ns node]
+set n2 [$ns node]
+set n3 [$ns node]
+set n4 [$ns node]
+set n5 [$ns node]
+set lan [$ns newLan "$n0 $n1 $n2 $n3 $n4 $n5" 0.5Mb 60ms LL Queue/DropTail MAC/Csma/Cd
+Channel]
+#setup TCP1 connection
+set tcp1 [new Agent/TCP]
+$ns attach-agent $n0 $tcp1
+set sink1 [new Agent/TCPSink]
+$ns attach-agent $n4 $sink1
+$ns connect $tcp1 $sink1
+$tcp1 set packet_size_ 552
+#set ftp over tcp connection
+set ftp1 [new Application/FTP]
+$ftp1 attach-agent $tcp1
+#setup TCP2 connection
+set tcp2 [new Agent/TCP]
+$ns attach-agent $n1 $tcp2
+set sink2 [new Agent/TCPSink]
+$ns attach-agent $n3 $sink2
+$ns connect $tcp2 $sink2
+$tcp2 set packet_size_ 552
+#set ftp over tcp connection
+set ftp2 [new Application/FTP]
+$ftp2 attach-agent $tcp2
+
+#scheduling the events
+$ns at 1.0 "$ftp1 start"
+$ns at 1.0 "$ftp2 start"
+$ns at 5.0 "$ftp1 stop"
+$ns at 5.0 "$ftp2 stop"
+$ns at 5.1 "finish"
+$ns run
+Output:
+
+Ring Topology
+
+Tcl code:
+set ns [new Simulator]
+set ta [open lab3_ring.tr w]
+$ns trace-all $ta
+set nf [open lab3_ring.nam w]
+$ns namtrace-all $nf
+
+$ns color 1 Blue
+$ns color 2 Red
+proc finish {} {
+global ns nf ta
+$ns flush-trace
+#Close the NAM trace file
+close $ta
+close $nf
+#Execute NAM on the trace file
+exec nam lab3_ring.nam &
+exit 0
+}
+
+#create six nodes
+set n0 [$ns node]
+set n1 [$ns node]
+set n2 [$ns node]
+set n3 [$ns node]
+set n4 [$ns node]
+set n5 [$ns node]
+$n0 color green
+$n4 color green
+$n1 color red
+$n5 color red
+$ns duplex-link $n0 $n1 0.5Mb 10ms DropTail
+$ns duplex-link $n1 $n2 0.5Mb 10ms DropTail
+$ns duplex-link $n2 $n3 0.5Mb 10ms DropTail
+$ns duplex-link $n3 $n4 0.5Mb 10ms DropTail
+$ns duplex-link $n4 $n5 0.5Mb 10ms DropTail
+$ns duplex-link $n5 $n0 0.5Mb 10ms DropTail
+$ns queue-limit $n0 $n1 2
+$ns queue-limit $n1 $n2 2
+$ns queue-limit $n2 $n3 2
+$ns queue-limit $n3 $n4 2
+$ns queue-limit $n4 $n5 2
+$ns queue-limit $n5 $n0 2
+
+#setup TCP1 connection
+set tcp1 [new Agent/TCP]
+$ns attach-agent $n0 $tcp1
+set sink1 [new Agent/TCPSink]
+$ns attach-agent $n4 $sink1
+$ns connect $tcp1 $sink1
+$tcp1 set packet_size_ 552
+#set ftp1 over tcp1 connection
+set ftp1 [new Application/FTP]
+$ftp1 attach-agent $tcp1
+#setup TCP2 connection
+set tcp2 [new Agent/TCP]
+$ns attach-agent $n5 $tcp2
+set sink2 [new Agent/TCPSink]
+$ns attach-agent $n1 $sink2
+$ns connect $tcp2 $sink2
+$tcp2 set packet_size_ 552
+#set ftp2 over tcp2 connection
+set ftp2 [new Application/FTP]
+$ftp2 attach-agent $tcp2
+
+#scheduling the events
+$ns at 1.0 "$ftp1 start"
+$ns at 1.0 "$ftp2 start"
+$ns at 5.0 "$ftp1 stop"
+$ns at 5.0 "$ftp2 stop"
+$ns at 5.1 "finish"
+$ns run
+
+Output:
+
+Star Topology
+
+Tcl code:
+set ns [new Simulator]
+set ta [open lab3_star.tr w]
+$ns trace-all $ta
+set nf [open lab3_star.nam w]
+$ns namtrace-all $nf
+$ns color 1 Blue
+$ns color 2 Red
+proc finish {} {
+global ns nf ta
+$ns flush-trace
+#Close the NAM trace file
+close $ta
+close $nf
+#Execute NAM on the trace file
+exec nam lab3_star.nam &
+exit 0
+}
+
+#create six nodes
+set n0 [$ns node]
+set n1 [$ns node]
+set n2 [$ns node]
+set n3 [$ns node]
+set n4 [$ns node]
+set n5 [$ns node]
+set n6 [$ns node]
+$n6 shape box
+$n0 color green
+$n4 color green
+$n1 color red
+$n5 color red
+$ns duplex-link $n0 $n6 0.5Mb 10ms DropTail
+$ns duplex-link $n1 $n6 0.5Mb 10ms DropTail
+$ns duplex-link $n2 $n6 0.5Mb 10ms DropTail
+$ns duplex-link $n3 $n6 0.5Mb 10ms DropTail
+$ns duplex-link $n4 $n6 0.5Mb 10ms DropTail
+$ns duplex-link $n5 $n6 0.5Mb 10ms DropTail
+$ns queue-limit $n0 $n6 2
+$ns queue-limit $n1 $n6 2
+$ns queue-limit $n2 $n6 2
+$ns queue-limit $n3 $n6 2
+$ns queue-limit $n4 $n6 2
+$ns queue-limit $n5 $n6 2
+
+#setup TCP1 connection
+set tcp1 [new Agent/TCP]
+$ns attach-agent $n0 $tcp1
+set sink1 [new Agent/TCPSink]
+$ns attach-agent $n4 $sink1
+$ns connect $tcp1 $sink1
+$tcp1 set packet_size_ 552
+
+#set ftp1 over tcp1 connection
+set ftp1 [new Application/FTP]
+$ftp1 attach-agent $tcp1
+#setup TCP2 connection
+set tcp2 [new Agent/TCP]
+$ns attach-agent $n5 $tcp2
+set sink2 [new Agent/TCPSink]
+$ns attach-agent $n1 $sink2
+$ns connect $tcp2 $sink2
+$tcp2 set packet_size_ 552
+#set ftp2 over tcp2 connection
+set ftp2 [new Application/FTP]
+$ftp2 attach-agent $tcp2
+
+#scheduling the events
+$ns at 1.0 "$ftp1 start"
+$ns at 1.0 "$ftp2 start"
+$ns at 5.0 "$ftp1 stop"
+$ns at 5.0 "$ftp2 stop"
+$ns at 5.1 "finish"
+$ns run
