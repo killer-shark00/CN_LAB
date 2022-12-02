@@ -50,4 +50,4 @@ print "Number of packets dropped=" drop
 }
 
 
-awk -f 1.tcl out.tr
+awk -f 1.awk out.tr
